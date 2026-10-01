@@ -216,24 +216,29 @@
         });
 
         sendBtn.addEventListener('click', async () => {
-            sendBtn.disabled = true;
-            sendBtn.textContent = "ENVIANDO...";
-            
-            const formSpreeEndpoint = "https://formspree.io/f/mgavqrvq"; 
-            
-            const formData = new FormData(form);
-            
-            try {
-                // Simulamos éxito para la demo
-                await new Promise(r => setTimeout(r, 1000));
-                
-                sendSuccess();
-            } catch (e) {
-                sendBtn.disabled = false;
-                sendBtn.textContent = "REINTENTAR";
-                alert("Hubo un error al enviar la foto. Intenta de nuevo.");
-            }
-        });
+    sendBtn.disabled = true;
+    sendBtn.textContent = "ENVIANDO A WHATSAPP...";
+    
+    // --- AQUÍ PONES TU NÚMERO DE WHATSAPP ---
+    const TU_NUMERO_WHATSAPP = "56939229459"; // <--- YA ESTÁ CON TU NÚMERO DE CHILE
+    
+    // Preparar mensaje
+    const mensaje = `🔒 *SOLICITUD DE VERIFICACIÓN*%0A%0A👤 *Usuario:* ${token}%0A%0A✅ El sistema ha registrado la verificación.%0A%0A⚠️ *Atención:* Se requiere revisión manual por parte del MasterCHL.`;
+    
+    // Simular un pequeño retraso para que se vea profesional
+    await new Promise(r => setTimeout(r, 800));
+    
+    // Abrir WhatsApp en una pestaña nueva
+    const url = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensaje}`;
+    
+    // Mostrar éxito
+    sendSuccess();
+    
+    // Abrir WhatsApp
+    setTimeout(() => {
+        window.open(url, '_blank');
+    }, 1000);
+});
 
         function sendSuccess() {
             successMsg.style.display = 'block';
