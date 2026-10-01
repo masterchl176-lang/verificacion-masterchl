@@ -219,13 +219,13 @@
                 recordBtn.style.display = 'block';
                 challenge.textContent = "Por favor, espera a que empiece la grabación...";
                 
-                setTimeout(iniciarPasos, 1000);
+                setTimeout(iniciarGrabacion, 1000);
             } catch (err) {
                 alert("Error al acceder a la cámara: " + err.message);
             }
         });
-        
-        // --- NUEVO SISTEMA DE CAPTURA POR COMANDO ---
+     
+      // --- NUEVO SISTEMA DE CAPTURA POR COMANDO ---
         function iniciarGrabacion() {
             challenge.textContent = "Preparando cámara... 3 segundos.";
             recordBtn.textContent = "PREPARANDO...";
