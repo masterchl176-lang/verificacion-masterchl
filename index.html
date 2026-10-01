@@ -235,7 +235,7 @@
                     challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
                     paso++;
                 } else if (paso === 3) {
-                    challenge.innerHTML = `3. Mira al CENTRO y di en voz alta:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong><br><span style="font-size:14px; color:#555;">(El código no cambiará, puedes leerlo con calma)</span>`;
+                    challenge.innerHTML = `3. Mira al CENTRO y sonrie:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong><br><span style="font-size:14px; color:#555;">(El código de seguridad generado)</span>`;
                     paso++;
                     clearInterval(interval);
                     setTimeout(iniciarGrabacion, 3000);
@@ -243,11 +243,81 @@
             }, 5000);
         }
 
-        // --- 5. NUEVO SISTEMA DE GRABACIÓN (COLLAGE 3x3) ---
+        // --- NUEVO SISTEMA DE CAPTURA POR COMANDO ---
         function iniciarGrabacion() {
-            challenge.textContent = "Capturando imágenes para tu verificación... (9 segundos)";
-            recordBtn.textContent = "CAPTURANDO...";
+            challenge.textContent = "Preparando cámara... 3 segundos.";
+            recordBtn.textContent = "PREPARANDO...";
             recordBtn.disabled = true;
+            
+            let frameCount = 0;
+            const frames = [];
+            const maxFrames = 9; // Límite de 9 fotos
+
+            const capturarFoto = () => {
+                // Si ya tenemos 9 fotos, no hacemos nada más
+                if (frameCount >= maxFrames) {
+                    return;
+                }
+                
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = video.videoWidth;
+                tempCanvas.height = video.videoHeight;
+                tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+                frames.push(tempCanvas);
+                frameCount++;
+            };
+
+            // --- PASO 1: Captura inicial (Mirando al frente) ---
+            setTimeout(() => {
+                challenge.textContent = "1. Mira al frente.";
+                capturarFoto(); // Foto 1
+                
+                // --- PASO 2: Captura a la derecha ---
+                setTimeout(() => {
+                    challenge.textContent = "2. Gira tu cabeza a la DERECHA.";
+                    capturarFoto(); // Foto 2
+                    
+                    setTimeout(() => {
+                        capturarFoto(); // Foto 3 (un poco más a la derecha)
+                        
+                        // --- PASO 3: Captura al centro ---
+                        setTimeout(() => {
+                            challenge.textContent = "3. Ahora, mira al CENTRO.";
+                            capturarFoto(); // Foto 4
+                            
+                            // --- PASO 4: Captura a la izquierda ---
+                            setTimeout(() => {
+                                challenge.textContent = "4. Ahora, gira a la IZQUIERDA.";
+                                capturarFoto(); // Foto 5
+                                
+                                setTimeout(() => {
+                                    capturarFoto(); // Foto 6 (un poco más a la izquierda)
+                                    
+                                    // --- PASO 5: Captura final (con el código) ---
+                                    setTimeout(() => {
+                                        challenge.innerHTML = `5. Mira al CENTRO y sonrie:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong>`;
+                                        capturarFoto(); // Foto 7
+                                        
+                                        setTimeout(() => {
+                                            capturarFoto(); // Foto 8 (diciendo el código)
+                                            capturarFoto(); // Foto 9 (diciendo el código)
+                                            
+                                            // --- PASO FINAL: Procesar el collage ---
+                                            procesarCollage(frames);
+                                        }, 2000); // Esperar 2 segundos para que diga el código
+                                    }, 3000);
+                                }, 3000);
+                            }, 3000);
+                        }, 3000);
+                    }, 3000);
+                }, 3000);
+            }, 3000); // Esperar 3 segundos al principio
+        }
+
+        // --- FUNCIÓN AUXILIAR PARA PROCESAR EL COLLAGE ---
+        function procesarCollage(frames) {
+            challenge.textContent = "Procesando tu verificación... un momento.";
             
             const collageWidth = video.videoWidth * 3;
             const collageHeight = video.videoHeight * 3;
@@ -256,53 +326,32 @@
             canvas.width = collageWidth;
             canvas.height = collageHeight;
 
-            let frameCount = 0;
-            const frames = [];
-            const intervalo = 1000;
+            // Crear el collage 3x3 con las fotos capturadas
+            frames.forEach((frameCanvas, index) => {
+                const x = (index % 3) * video.videoWidth;
+                const y = Math.floor(index / 3) * video.videoHeight;
+                ctx.drawImage(frameCanvas, x, y);
+            });
+            
+            // Aplicar el sello de seguridad
+            aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight);
+            
+            // Guardar el collage en la galería
+            guardarCollageEnGaleria(canvas, token);
 
-            const interval = setInterval(() => {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = video.videoWidth;
-                tempCanvas.height = video.videoHeight;
-                tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-                frames.push(tempCanvas);
-                
-                frameCount++;
-                
-                if (frameCount >= 9) {
-                    clearInterval(interval);
-                    
-                    // --- PASO 1: CREAR EL COLLAGE 3x3 ---
-                    challenge.textContent = "Procesando tu verificación... un momento.";
-                    frames.forEach((frameCanvas, index) => {
-                        const x = (index % 3) * video.videoWidth;
-                        const y = Math.floor(index / 3) * video.videoHeight;
-                        ctx.drawImage(frameCanvas, x, y);
-                    });
-                    
-                    // --- PASO 2: APLICAR EL SELLO DE SEGURIDAD EN EL CENTRO ---
-                    aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight);
-                    
-                    // --- PASO 3: GUARDAR EL COLLAGE EN LA GALERÍA ---
-                    guardarCollageEnGaleria(canvas, token);
+            // Mostrar la guía y el botón
+            video.srcObject = null;
+            recordBtn.style.display = 'none';
+            sendBtn.style.display = 'block';
 
-                    // --- PASO 4: MOSTRAR LA GUÍA Y EL BOTÓN AUTOMÁTICO ---
-                    video.srcObject = null;
-                    recordBtn.style.display = 'none';
-                    sendBtn.style.display = 'block';
-
-                    challenge.innerHTML = `
-                        <div style="text-align: center; font-size: 16px; color: #333;">
-                            <strong>✅ ¡Verificación completada!</strong><br><br>
-                            Se ha guardado una imagen en tu carpeta "Descargas".<br><br>
-                            Presiona el botón de abajo para adjuntarla automáticamente a WhatsApp.
-                        </div>
-                    `;
-                    
-                    sendBtn.textContent = "SELECCIONAR Y ENVIAR IMAGEN";
-                }
-            }, intervalo);
+            challenge.innerHTML = `
+                <div style="text-align: center; font-size: 18px; color: #333; font-weight: bold;">
+                    ✅ ¡Verificación completada!<br><br>
+                    <span style="font-size: 16px; color: #0056b3;">Se ha generado tu imagen de seguridad.</span>
+                </div>
+            `;
+            
+            sendBtn.textContent = "SELECCIONAR Y ENVIAR IMAGEN";
         }
 
         // --- FUNCIÓN NUEVA: SELLO SUPERAGRESIVO (CUBRE TODAS LAS FOTOS) ---
