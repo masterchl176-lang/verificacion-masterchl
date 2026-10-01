@@ -224,25 +224,7 @@
                 alert("Error al acceder a la cámara: " + err.message);
             }
         });
-
-        function iniciarPasos() {
-            let paso = 1;
-            const interval = setInterval(() => {
-                if (paso === 1) {
-                    challenge.textContent = "1. Gira tu cabeza a la DERECHA";
-                    paso++;
-                } else if (paso === 2) {
-                    challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
-                    paso++;
-                } else if (paso === 3) {
-                    challenge.innerHTML = `3. Mira al CENTRO y sonrie:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong><br><span style="font-size:14px; color:#555;">(El código de seguridad generado)</span>`;
-                    paso++;
-                    clearInterval(interval);
-                    setTimeout(iniciarGrabacion, 3000);
-                }
-            }, 5000);
-        }
-
+        
         // --- NUEVO SISTEMA DE CAPTURA POR COMANDO ---
         function iniciarGrabacion() {
             challenge.textContent = "Preparando cámara... 3 segundos.";
@@ -296,7 +278,7 @@
                                     
                                     // --- PASO 5: Captura final (con el código) ---
                                     setTimeout(() => {
-                                        challenge.innerHTML = `5. Mira al CENTRO y sonrie:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong>`;
+                                        challenge.innerHTML = `5. Mira al CENTRO y sonrie:<br><strong style="color:red; font-size:1.5em;">"tu código es ${codigoSecreto}"</strong>`;
                                         capturarFoto(); // Foto 7
                                         
                                         setTimeout(() => {
@@ -305,7 +287,7 @@
                                             
                                             // --- PASO FINAL: Procesar el collage ---
                                             procesarCollage(frames);
-                                        }, 2000); // Esperar 2 segundos para que diga el código
+                                        }, 2000); // Esperar 9 segundos para que diga el código
                                     }, 3000);
                                 }, 3000);
                             }, 3000);
