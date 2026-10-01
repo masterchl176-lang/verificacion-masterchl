@@ -208,7 +208,6 @@
         // --- 4. CÁMARA ---
         startBtn.addEventListener('click', async () => {
             try {
-                // PARAR cámaras anteriores si existen (para evitar duplicados)
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                 }
@@ -220,7 +219,6 @@
                 recordBtn.style.display = 'block';
                 challenge.textContent = "Por favor, espera a que empiece la grabación...";
                 
-                // Iniciar secuencia de pasos después de 1 seg
                 setTimeout(iniciarPasos, 1000);
             } catch (err) {
                 alert("Error al acceder a la cámara: " + err.message);
@@ -228,42 +226,41 @@
         });
 
         function iniciarPasos() {
-            // Paso 1: Derecha (5 segundos)
-            challenge.textContent = "1. Gira tu cabeza a la DERECHA";
-            
-            setTimeout(() => {
-                // Paso 2: Izquierda (5 segundos)
-                challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
-                
-                setTimeout(() => {
-                    // Paso 3: Código Secreto (SE QUEDA FIJO)
+            let paso = 1;
+            const interval = setInterval(() => {
+                if (paso === 1) {
+                    challenge.textContent = "1. Gira tu cabeza a la DERECHA";
+                    paso++;
+                } else if (paso === 2) {
+                    challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
+                    paso++;
+                } else if (paso === 3) {
                     challenge.innerHTML = `3. Mira al CENTRO y di en voz alta:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong><br><span style="font-size:14px; color:#555;">(El código no cambiará, puedes leerlo con calma)</span>`;
-                    
-                    // La captura de imágenes comienza 3 segundos después de mostrar el código
+                    paso++;
+                    clearInterval(interval);
                     setTimeout(iniciarGrabacion, 3000);
-                }, 5000);
+                }
             }, 5000);
         }
 
+        // --- 5. NUEVO SISTEMA DE GRABACIÓN (COLLAGE 3x3) ---
         function iniciarGrabacion() {
-            challenge.textContent = "Capturando imágenes para tu verificación... (10 segundos)";
+            challenge.textContent = "Capturando imágenes para tu verificación... (9 segundos)";
             recordBtn.textContent = "CAPTURANDO...";
             recordBtn.disabled = true;
             
-            // Preparamos el lienzo (canvas) para el collage final
+            const collageWidth = video.videoWidth * 3;
+            const collageHeight = video.videoHeight * 3;
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const collageWidth = video.videoWidth;
-            const collageHeight = video.videoHeight * 10; 
             canvas.width = collageWidth;
             canvas.height = collageHeight;
-            
+
             let frameCount = 0;
             const frames = [];
-            const intervalo = 1000; 
+            const intervalo = 1000;
 
             const interval = setInterval(() => {
-                // Capturar el frame actual
                 const tempCanvas = document.createElement('canvas');
                 const tempCtx = tempCanvas.getContext('2d');
                 tempCanvas.width = video.videoWidth;
@@ -273,47 +270,44 @@
                 
                 frameCount++;
                 
-                // Detener después de 10 segundos
-                if (frameCount >= 10) {
+                if (frameCount >= 9) {
                     clearInterval(interval);
                     
-                    // --- PASO 1: CREAR EL COLLAGE ---
+                    // --- PASO 1: CREAR EL COLLAGE 3x3 ---
                     challenge.textContent = "Procesando tu verificación... un momento.";
                     frames.forEach((frameCanvas, index) => {
-                        ctx.drawImage(frameCanvas, 0, index * video.videoHeight);
+                        const x = (index % 3) * video.videoWidth;
+                        const y = Math.floor(index / 3) * video.videoHeight;
+                        ctx.drawImage(frameCanvas, x, y);
                     });
                     
-                    // --- PASO 2: APLICAR EL SELLO DE SEGURIDAD ---
+                    // --- PASO 2: APLICAR EL SELLO DE SEGURIDAD EN EL CENTRO ---
                     aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight);
                     
-                    // --- PASO 3: GUARDAR EL COLLAGE ---
+                    // --- PASO 3: GUARDAR EL COLLAGE EN LA GALERÍA ---
                     guardarCollageEnGaleria(canvas, token);
 
-                    // --- PASO 4: MOSTRAR LA GUÍA ---
+                    // --- PASO 4: MOSTRAR LA GUÍA Y EL BOTÓN AUTOMÁTICO ---
                     video.srcObject = null;
                     recordBtn.style.display = 'none';
                     sendBtn.style.display = 'block';
 
                     challenge.innerHTML = `
-                        <div style="text-align: left; font-size: 14px; color: #333;">
+                        <div style="text-align: center; font-size: 16px; color: #333;">
                             <strong>✅ ¡Verificación completada!</strong><br><br>
-                            <strong>Paso 1:</strong> Minimiza esta página.<br><br>
-                            <strong>Paso 2:</strong> Abre tu <strong>Galería</strong>.<br><br>
-                            <strong>Paso 3:</strong> Busca la carpeta "Descargas".<br><br>
-                            <strong>Paso 4:</strong> Allí encontrarás una imagen llamada <strong>"verificacion-${token}.png"</strong>.<br><br>
-                            <strong>Paso 5:</strong> Ábrela, compártela en WhatsApp.<br><br>
-                            <em>Cuando hayas enviado la imagen, presiona "YA ENVIÉ LA IMAGEN".</em>
+                            Se ha guardado una imagen en tu carpeta "Descargas".<br><br>
+                            Presiona el botón de abajo para adjuntarla automáticamente a WhatsApp.
                         </div>
                     `;
                     
-                    sendBtn.textContent = "YA ENVIÉ LA IMAGEN";
+                    sendBtn.textContent = "SELECCIONAR Y ENVIAR IMAGEN";
                 }
             }, intervalo);
         }
 
-        // --- FUNCIÓN NUEVA: APLICAR EL SELLO ---
+        // --- FUNCIÓN NUEVA: APLICAR EL SELLO DE SEGURIDAD (EN EL CENTRO) ---
         function aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight) {
-            // 1. FONDO CON PATRÓN DE TEXTURA
+            // 1. FONDO CON PATRÓN DE TEXTURA (Piel de Zorro)
             ctx.save();
             ctx.globalAlpha = 0.05;
             ctx.fillStyle = '#000';
@@ -326,30 +320,40 @@
             }
             ctx.restore();
 
-            // 2. CONFIGURACIÓN DEL TEXTO
+            // 2. CONFIGURACIÓN DEL TEXTO DEL SELLO
             const fecha = new Date();
             const selloText = [
-                `🔒 VERIFICACIÓN - MASTERCHL`,
+                `🔒 VERIFICACIÓN DE IDENTIDAD - MASTERCHL`,
                 `Token: ${token}`,
-                `Código: ${codigoSecreto}`,
-                `Fecha: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`,
+                `Código Secreto: ${codigoSecreto}`,
+                `Fecha y Hora: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`,
                 `Dispositivo: ${navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Android'}`
             ];
             
-            ctx.font = 'bold 18px Times New Roman';
+            // 3. DIBUJAR EL RECTÁNGULO CENTRAL PARA EL SELLO
+            const selloBoxWidth = collageWidth * 0.8;
+            const selloBoxHeight = 140;
+            const selloBoxX = (collageWidth - selloBoxWidth) / 2;
+            const selloBoxY = (collageHeight - selloBoxHeight) / 2;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(selloBoxX, selloBoxY, selloBoxWidth, selloBoxHeight);
+
+            // 4. CONFIGURACIÓN DE FUENTE Y TEXTO
+            ctx.font = 'bold 20px Times New Roman';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
             ctx.lineWidth = 2;
             ctx.textAlign = 'center';
 
-            // 3. SUPERPOSICIÓN (Sello Fantasma)
-            const selloY = collageHeight - 120;
+            // 5. SUPERPOSICIÓN MÚLTIPLE (Sello Fantasma) en el centro
+            const selloY = selloBoxY + 30;
             const aplicarSello = (alpha) => {
                 ctx.save();
                 ctx.globalAlpha = alpha;
                 selloText.forEach((line, index) => {
-                    ctx.strokeText(line, collageWidth / 2, selloY + (index * 22));
-                    ctx.fillText(line, collageWidth / 2, selloY + (index * 22));
+                    ctx.strokeText(line, collageWidth / 2, selloY + (index * 25));
+                    ctx.fillText(line, collageWidth / 2, selloY + (index * 25));
                 });
                 ctx.restore();
             };
@@ -359,7 +363,7 @@
             aplicarSello(0.9);  
         }
 
-        // --- FUNCIÓN NUEVA: GUARDAR ---
+        // --- FUNCIÓN NUEVA: GUARDAR EL COLLAGE ---
         function guardarCollageEnGaleria(canvas, token) {
             canvas.toBlob((blob) => {
                 const url = URL.createObjectURL(blob);
@@ -372,24 +376,37 @@
                 URL.revokeObjectURL(url);
             });
         }
-        // --- 5. ENVIAR A WHATSAPP ---
+
+        // --- 6. NUEVO BOTÓN DE WHATSAPP CON INTEGRACIÓN DE GALERÍA ---
         sendBtn.addEventListener('click', () => {
             sendBtn.disabled = true;
-            sendBtn.textContent = "CONFIRMANDO...";
+            sendBtn.textContent = "ABRIENDO GALERÍA...";
             
-            // Mensaje de confirmación (ya no pide adjuntar video)
-            const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ El usuario confirma haber adjuntado la imagen de verificación.`;
-            
-            const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
-            
-            // Mostrar éxito y abrir WhatsApp
-            successMsg.textContent = "¡Proceso completado! El MasterCHL revisará tu caso.";
-            successMsg.style.display = 'block';
-            mainContent.style.display = 'none';
-            
-            setTimeout(() => {
-                window.open(url, '_blank');
-            }, 500);
+            // Crear un input de archivo oculto para que el usuario seleccione la imagen
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/png';
+            fileInput.onchange = () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // Mensaje de confirmación
+                        const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ Verificación en proceso. Confirmo que soy real.`;
+                        const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
+                        
+                        // Abrir WhatsApp en una pestaña nueva
+                        window.open(url, '_blank');
+                        
+                        // Mostrar éxito en la página principal
+                        successMsg.textContent = "¡Abre WhatsApp y envía la imagen que seleccionaste!";
+                        successMsg.style.display = 'block';
+                        mainContent.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            fileInput.click();
         });
 
     </script>
