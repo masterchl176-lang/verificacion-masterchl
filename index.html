@@ -305,9 +305,9 @@
             }, intervalo);
         }
 
-        // --- FUNCIÓN NUEVA: SELLO A SANGRE (COBRE TODA LA IMAGEN) ---
+        // --- FUNCIÓN NUEVA: SELLO SUPERAGRESIVO (CUBRE TODAS LAS FOTOS) ---
         function aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight) {
-            // 1. FONDO CON PATRÓN DE TEXTURA (Ruido) para dificultar edición
+            // 1. FONDO CON PATRÓN DE TEXTURA (Ruido)
             ctx.save();
             ctx.globalAlpha = 0.05;
             ctx.fillStyle = '#000';
@@ -320,50 +320,48 @@
             }
             ctx.restore();
 
-            // 2. CONFIGURACIÓN DEL TEXTO (AHORA GIGANTE)
+            // 2. CONFIGURACIÓN DEL TEXTO (AHORA GIGANTE Y EN CADA FOTO)
             const fecha = new Date();
-            const linea1 = `🔒 VERIFICACIÓN - MASTERCHL`;
-            const linea2 = `Token: ${token}`;
-            const linea3 = `Código Secreto: ${codigoSecreto}`;
-            const linea4 = `Fecha: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`;
-            const linea5 = `Dispositivo: ${navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Android'}`;
+            const textoPrincipal = `VERIFICACIÓN - MASTERCHL\nToken: ${token}\nCódigo: ${codigoSecreto}\nFecha: ${fecha.toLocaleString()}`;
             
-            const tamanoFuente = 60; 
-            ctx.font = `bold ${tamanoFuente}px Times New Roman`;
-            
-            // 3. DIBUJAR TEXTO GRANDE A TRAVÉS DE TODA LA IMAGEN (DIAGONALMENTE)
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 5;
+            // Tamaño de fuente MUY GRANDE (100px)
+            const tamanoFuente = 100; 
+            ctx.font = `bold ${tamanoFuente}px Arial`; // Usamos Arial que es más legible en móvil
             ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; // Negro semitransparente
             
-            for (let y = -200; y < collageHeight + 200; y += tamanoFuente + 20) {
-                for (let x = -200; x < collageWidth + 200; x += 400) {
-                    ctx.strokeText(linea1, x + 100, y + 100);
-                    ctx.strokeText(linea2, x + 100, y + 100);
-                    ctx.strokeText(linea3, x + 100, y + 100);
-                    ctx.strokeText(linea4, x + 100, y + 100);
-                    ctx.strokeText(linea5, x + 100, y + 100);
+            // 3. DIBUJAR EL TEXTO EN CADA UNA DE LAS 9 CELDAS DEL COLLAGE
+            const cellWidth = collageWidth / 3;
+            const cellHeight = collageHeight / 3;
+            
+            // Bucle para recorrer las 9 celdas
+            for (let fila = 0; fila < 3; fila++) {
+                for (let col = 0; col < 3; col++) {
+                    const xCentro = (col * cellWidth) + (cellWidth / 2);
+                    const yCentro = (fila * cellHeight) + (cellHeight / 2);
                     
-                    ctx.fillText(linea1, x + 100, y + 100);
-                    ctx.fillText(linea2, x + 100, y + 100);
-                    ctx.fillText(linea3, x + 100, y + 100);
-                    ctx.fillText(linea4, x + 100, y + 100);
-                    ctx.fillText(linea5, x + 100, y + 100);
+                    // Dibujar el texto en el centro de cada celda
+                    // Usamos fillText para el texto y strokeText para el borde
+                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // Borde blanco
                     
-                    ctx.globalAlpha = 0.3;
-                    ctx.strokeText(linea1, x + 105, y + 105);
-                    ctx.fillText(linea1, x + 105, y + 105);
-                    ctx.strokeText(linea2, x + 105, y + 105);
-                    ctx.fillText(linea2, x + 105, y + 105);
-                    ctx.strokeText(linea3, x + 105, y + 105);
-                    ctx.fillText(linea3, x + 105, y + 105);
-                    ctx.strokeText(linea4, x + 105, y + 105);
-                    ctx.fillText(linea4, x + 105, y + 105);
-                    ctx.strokeText(linea5, x + 105, y + 105);
-                    ctx.fillText(linea5, x + 105, y + 105);
+                    // Capa 1: Borde y relleno del texto principal
+                    ctx.strokeText(textoPrincipal, xCentro, yCentro - 50);
+                    ctx.fillText(textoPrincipal, xCentro, yCentro - 50);
                     
-                    ctx.globalAlpha = 1.0;
+                    // Capa 2: Capa fantasma semitransparente para dificultar edición
+                    ctx.globalAlpha = 0.4;
+                    ctx.strokeText(textoPrincipal, xCentro + 5, yCentro - 45);
+                    ctx.fillText(textoPrincipal, xCentro + 5, yCentro - 45);
+                    ctx.globalAlpha = 1.0; // Resetear
+                    
+                    // Capa 3: Texto invertido (espejo) para confundir Photoshop
+                    ctx.save();
+                    ctx.translate(xCentro, yCentro);
+                    ctx.scale(1, -1); // Invertir verticalmente
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillText(textoPrincipal, 0, 0);
+                    ctx.restore();
                 }
             }
         }
