@@ -305,9 +305,9 @@
             }, intervalo);
         }
 
-        // --- FUNCIÓN NUEVA: APLICAR EL SELLO DE SEGURIDAD (EN EL CENTRO) ---
+        // --- FUNCIÓN NUEVA: SELLO A SANGRE (COBRE TODA LA IMAGEN) ---
         function aplicarSelloDeSeguridad(ctx, collageWidth, collageHeight) {
-            // 1. FONDO CON PATRÓN DE TEXTURA (Piel de Zorro)
+            // 1. FONDO CON PATRÓN DE TEXTURA (Ruido) para dificultar edición
             ctx.save();
             ctx.globalAlpha = 0.05;
             ctx.fillStyle = '#000';
@@ -320,49 +320,53 @@
             }
             ctx.restore();
 
-            // 2. CONFIGURACIÓN DEL TEXTO DEL SELLO
+            // 2. CONFIGURACIÓN DEL TEXTO (AHORA GIGANTE)
             const fecha = new Date();
-            const selloText = [
-                `🔒 VERIFICACIÓN DE IDENTIDAD - MASTERCHL`,
-                `Token: ${token}`,
-                `Código Secreto: ${codigoSecreto}`,
-                `Fecha y Hora: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`,
-                `Dispositivo: ${navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Android'}`
-            ];
+            const linea1 = `🔒 VERIFICACIÓN - MASTERCHL`;
+            const linea2 = `Token: ${token}`;
+            const linea3 = `Código Secreto: ${codigoSecreto}`;
+            const linea4 = `Fecha: ${fecha.toLocaleDateString()} ${fecha.toLocaleTimeString()}`;
+            const linea5 = `Dispositivo: ${navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Android'}`;
             
-            // 3. DIBUJAR EL RECTÁNGULO CENTRAL PARA EL SELLO
-            const selloBoxWidth = collageWidth * 0.8;
-            const selloBoxHeight = 140;
-            const selloBoxX = (collageWidth - selloBoxWidth) / 2;
-            const selloBoxY = (collageHeight - selloBoxHeight) / 2;
-
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillRect(selloBoxX, selloBoxY, selloBoxWidth, selloBoxHeight);
-
-            // 4. CONFIGURACIÓN DE FUENTE Y TEXTO
-            ctx.font = 'bold 20px Times New Roman';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.lineWidth = 2;
+            const tamanoFuente = 60; 
+            ctx.font = `bold ${tamanoFuente}px Times New Roman`;
+            
+            // 3. DIBUJAR TEXTO GRANDE A TRAVÉS DE TODA LA IMAGEN (DIAGONALMENTE)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 5;
             ctx.textAlign = 'center';
-
-            // 5. SUPERPOSICIÓN MÚLTIPLE (Sello Fantasma) en el centro
-            const selloY = selloBoxY + 30;
-            const aplicarSello = (alpha) => {
-                ctx.save();
-                ctx.globalAlpha = alpha;
-                selloText.forEach((line, index) => {
-                    ctx.strokeText(line, collageWidth / 2, selloY + (index * 25));
-                    ctx.fillText(line, collageWidth / 2, selloY + (index * 25));
-                });
-                ctx.restore();
-            };
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
             
-            aplicarSello(0.25); 
-            aplicarSello(0.5);  
-            aplicarSello(0.9);  
+            for (let y = -200; y < collageHeight + 200; y += tamanoFuente + 20) {
+                for (let x = -200; x < collageWidth + 200; x += 400) {
+                    ctx.strokeText(linea1, x + 100, y + 100);
+                    ctx.strokeText(linea2, x + 100, y + 100);
+                    ctx.strokeText(linea3, x + 100, y + 100);
+                    ctx.strokeText(linea4, x + 100, y + 100);
+                    ctx.strokeText(linea5, x + 100, y + 100);
+                    
+                    ctx.fillText(linea1, x + 100, y + 100);
+                    ctx.fillText(linea2, x + 100, y + 100);
+                    ctx.fillText(linea3, x + 100, y + 100);
+                    ctx.fillText(linea4, x + 100, y + 100);
+                    ctx.fillText(linea5, x + 100, y + 100);
+                    
+                    ctx.globalAlpha = 0.3;
+                    ctx.strokeText(linea1, x + 105, y + 105);
+                    ctx.fillText(linea1, x + 105, y + 105);
+                    ctx.strokeText(linea2, x + 105, y + 105);
+                    ctx.fillText(linea2, x + 105, y + 105);
+                    ctx.strokeText(linea3, x + 105, y + 105);
+                    ctx.fillText(linea3, x + 105, y + 105);
+                    ctx.strokeText(linea4, x + 105, y + 105);
+                    ctx.fillText(linea4, x + 105, y + 105);
+                    ctx.strokeText(linea5, x + 105, y + 105);
+                    ctx.fillText(linea5, x + 105, y + 105);
+                    
+                    ctx.globalAlpha = 1.0;
+                }
+            }
         }
-
         // --- FUNCIÓN NUEVA: GUARDAR EL COLLAGE ---
         function guardarCollageEnGaleria(canvas, token) {
             canvas.toBlob((blob) => {
