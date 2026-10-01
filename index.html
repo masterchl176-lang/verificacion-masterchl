@@ -46,13 +46,27 @@
             </div>
 
             <button id="startBtn">INICIAR CÁMARA</button>
-            <button id="recordBtn" style="display:none;">GRABAR VERIFICACIÓN</button>
-            <button id="sendBtn" style="display:none;">ENVIAR VERIFICACIÓN</button>
+            <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
         </div>
 
-        <div id="error-msg" class="error" style="display:none;"></div>
-        <div id="success-msg" class="success" style="display:none;"></div>
+        <div class="challenge-box">
+            <h3 class="challenge" id="challenge">Por favor, inicia la cámara para comenzar.</h3>
+        </div>
+
+        <div id="finalInstructions" style="display:none; background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #0056b3; text-align: left;">
+            <p style="margin-top:0; font-weight:bold;">🔒 <span style="color:#004494;">VERIFICACIÓN DE SEGURIDAD FINAL</span></p>
+            <p style="margin-bottom:0;">Al presionar "ENVIAR VERIFICACIÓN", se abrirá WhatsApp para notificar al MasterCHL.</p>
+            <p style="margin-bottom:0;"><strong>⚠️ IMPORTANTE:</strong> Para confirmar tu identidad, <u>debes adjuntar el video grabado</u> desde tu galería una vez que se abra WhatsApp.</p>
+            <p style="margin-bottom:0; font-size: 12px; color: #004494;">Este paso es obligatorio para evitar fraudes y verificar que eres el titular.</p>
+        </div>
+
+        <button id="recordBtn" style="display:none;">GRABAR VERIFICACIÓN</button>
+        <button id="sendBtn" style="display:none;">ENVIAR VERIFICACIÓN</button>
     </div>
+
+    <div id="error-msg" class="error" style="display:none;"></div>
+    <div id="success-msg" class="success" style="display:none;"></div>
 
     <form id="verificacionForm" style="display:none;">
         <input type="hidden" name="nombre" id="nombreInput">
@@ -64,7 +78,7 @@
     <script>
         // --- CONFIGURACIÓN ---
         // PEGA AQUÍ TU ENLACE DE GOOGLE SHEETS (CSV)
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuh8HzH802xZYnxlX_lBiT2x_vqfcyluC9hEAEtfKll4Oz1CdhD-SaKRqhsJAWWD1_V4SHnOpjuvad/pub?output=csv&t=' + new Date().getTime(); 
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuh8HzH802xZYnxlX_lBI2T2x_vqfcyluC9hEAEtfKll4Oz1CdhD-SaKRqhsJAWWD1_V4SHnOpjuvad/pub?output=csv&t=' + new Date().getTime();
         
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -77,6 +91,9 @@
         const successMsg = document.getElementById('success-msg');
         const mainContent = document.getElementById('main-content');
         const form = document.getElementById('verificacionForm');
+
+        // Genera un código secreto único para esta sesión (Versión Corta y Fácil)
+        const codigoSecreto = ['PERRO', 'CASA', 'SOL', 'AGUA', 'FUEGO', 'LUNA', 'FLOR', 'ROJO'][Math.floor(Math.random() * 8)] + '-' + Math.floor(Math.random() * 9) + 1;
 
         let mediaRecorder;
         let recordedChunks = [];
@@ -91,8 +108,6 @@
 
         async function checkToken(tokenToCheck) {
             try {
-                // Si no has configurado tu hoja, esto dará error. 
-                // Para pruebas, puedes cambiar el 'try/catch' por 'loadVerification();' directamente.
                 const response = await fetch(SHEET_URL);
                 const data = await response.text();
                 const rows = data.split('\n');
@@ -121,7 +136,7 @@
                 } else if (tokenUsed) {
                     showError("Este enlace de verificación ya ha sido utilizado. Por favor, contacta con el creador de cuentas.");
                 } else {
-                    showError("Enlace de verificación no válido. Por favor, contacta con el creador de cuentas.");
+                    showError("Enlace de verificación no válido. Por favor, contacte con el creador de cuentas.");
                 }
 
             } catch (e) {
@@ -160,7 +175,10 @@
         const steps = [
             () => challenge.textContent = "1. Gira tu cabeza lentamente a la DERECHA",
             () => challenge.textContent = "2. Ahora, gírala a la IZQUIERDA",
-            () => challenge.textContent = "3. Mira al CENTRO y mantén la sonrisa"
+            () => {
+                // Muestra el código secreto en el paso 3
+                challenge.innerHTML = `3. Mira al CENTRO y di en voz alta: <br><strong style="font-size: 24px; color: #d9534f;">'Mi código es ${codigoSecreto}'</strong>`;
+            }
         ];
 
         function startChallengeSequence() {
@@ -197,6 +215,7 @@
                 
                 recordBtn.style.display = 'none';
                 sendBtn.style.display = 'block';
+                document.getElementById('finalInstructions').style.display = 'block'; // <-- Muestra el texto de instrucciones
                 challenge.textContent = "¡Video finalizado! Pulsa 'ENVIAR VERIFICACIÓN'";
                 
                 if (stream) {
@@ -216,29 +235,29 @@
         });
 
         sendBtn.addEventListener('click', async () => {
-    sendBtn.disabled = true;
-    sendBtn.textContent = "ENVIANDO A WHATSAPP...";
-    
-    // --- AQUÍ PONES TU NÚMERO DE WHATSAPP ---
-    const TU_NUMERO_WHATSAPP = "56939229459"; // <--- YA ESTÁ CON TU NÚMERO DE CHILE
-    
-    // Preparar mensaje
-    const mensaje = `🔒 *SOLICITUD DE VERIFICACIÓN*%0A%0A👤 *Usuario:* ${token}%0A%0A✅ El sistema ha registrado la verificación.%0A%0A⚠️ *Atención:* Se requiere revisión manual por parte del MasterCHL.`;
-    
-    // Simular un pequeño retraso para que se vea profesional
-    await new Promise(r => setTimeout(r, 800));
-    
-    // Abrir WhatsApp en una pestaña nueva
-    const url = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensaje}`;
-    
-    // Mostrar éxito
-    sendSuccess();
-    
-    // Abrir WhatsApp
-    setTimeout(() => {
-        window.open(url, '_blank');
-    }, 1000);
-});
+            sendBtn.disabled = true;
+            sendBtn.textContent = "ENVIANDO A WHATSAPP...";
+            
+            // --- AQUÍ PONES TU NÚMERO DE WHATSAPP ---
+            const TU_NUMERO_WHATSAPP = "56939229459"; // <--- YA ESTÁ CON TU NÚMERO DE CHILE
+            
+            // Preparar mensaje
+            const mensaje = `🔒 *VERIFICACIÓN DE SEGURIDAD - MASTERCHL*%0A%0A👤 *Solicitud de:* ${token}%0A%0A✅ El sistema ha completado el proceso de grabación.%0A%0A⚠️ *PASO FINAL REQUERIDO:* Para finalizar, adjunte el video de verificación que acaba de grabar.%0A%0A📹 *Instrucciones:* Presione el ícono del clip 📎, seleccione la galería y adjunte el video más reciente.%0A%0A⚠️ *Atención:* Esta verificación es obligatoria para confirmar que usted es el titular de la cuenta y no un tercero. El proceso será revisado personalmente por el MasterCHL.`;
+            
+            // Simular un pequeño retraso para que se vea profesional
+            await new Promise(r => setTimeout(r, 800));
+            
+            // Abrir WhatsApp en una pestaña nueva
+            const url = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensaje}`;
+            
+            // Mostrar éxito
+            sendSuccess();
+            
+            // Abrir WhatsApp
+            setTimeout(() => {
+                window.open(url, '_blank');
+            }, 1000);
+        });
 
         function sendSuccess() {
             successMsg.style.display = 'block';
