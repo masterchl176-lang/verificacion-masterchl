@@ -209,7 +209,7 @@
                     stream.getTracks().forEach(track => track.stop());
                 }
                 
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', mirror: 'never' } });
                 video.srcObject = stream;
                 
                 startBtn.style.display = 'none';
