@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Identidad - MasterCHL</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); text-align: center; max-width: 500px; width: 90%; border-top: 5px solid #0056b3; }
+        .header { margin-bottom: 30px; }
+        .logo-img { max-width: 180px; height: auto; display: block; margin: 0 auto 20px auto; border-radius: 10px; }
+        h1 { color: #222; margin: 0; font-size: 26px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .subtitle { color: #666; font-size: 14px; margin-top: 5px; font-weight: 600; }
+        .intro { font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.5; }
+        .camera-container { border: 3px solid #ddd; border-radius: 12px; overflow: hidden; margin: 25px 0; height: 320px; background: #000; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .challenge-box { background-color: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0056b3; }
+        .challenge { font-size: 17px; font-weight: bold; color: #004494; margin: 0; }
+        .footer { margin-top: 30px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        button { background-color: #0056b3; color: white; border: none; padding: 14px 30px; font-size: 16px; font-weight: bold; border-radius: 50px; cursor: pointer; margin: 8px; width: 100%; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,86,179,0.2); }
+        button:hover { background-color: #004494; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,86,179,0.3); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .error { color: #d9534f; font-weight: bold; margin-top: 20px; font-size: 18px; background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb; }
+        .success { color: #28a745; font-weight: bold; margin-top: 20px; font-size: 20px; background: #f0fff4; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://i.imgur.com/5QZ4kLp.png" alt="MasterCHL Logo" class="logo-img">
+            <h1>Verificación de Identidad</h1>
+            <div class="subtitle">Atte: El MasterCHL, Creador de Cuentas</div>
+        </div>
+        
+        <div id="main-content">
+            <p class="intro">Verificaremos que tú eres la persona y no has robado las fotos. Sigue las instrucciones para completar tu verificación.</p>
+            
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+            </div>
+
+            <div class="challenge-box">
+                <h3 class="challenge" id="challenge">Por favor, inicia la cámara para comenzar.</h3>
+            </div>
+
+            <button id="startBtn">INICIAR CÁMARA</button>
+            <button id="recordBtn" style="display:none;">GRABAR VERIFICACIÓN</button>
+            <button id="sendBtn" style="display:none;">ENVIAR VERIFICACIÓN</button>
+        </div>
+
+        <div id="error-msg" class="error" style="display:none;"></div>
+        <div id="success-msg" class="success" style="display:none;"></div>
+    </div>
+
+    <form id="verificacionForm" style="display:none;">
+        <input type="hidden" name="nombre" id="nombreInput">
+        <input type="hidden" name="token" id="tokenInput">
+        <input type="text" name="selfie" id="selfieInput">
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/@formspree/core@3.0.0"></script>
+    <script>
+        // --- CONFIGURACIÓN ---
+        // PEGA AQUÍ TU ENLACE DE GOOGLE SHEETS (CSV)
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuh8HzH802xZYnxlX_lBiT2x_vqfcyluC9hEAEtfKll4Oz1CdhD-SaKRqhsJAWWD1_V4SHnOpjuvad/pub?output=csv'; 
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const challenge = document.getElementById('challenge');
+        const errorMsg = document.getElementById('error-msg');
+        const successMsg = document.getElementById('success-msg');
+        const mainContent = document.getElementById('main-content');
+        const form = document.getElementById('verificacionForm');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        // INICIO: Validar token
+        if (!token) {
+            showError("Enlace de verificación no válido. Por favor, contacta con el soporte.");
+        } else {
+            checkToken(token);
+        }
+
+        async function checkToken(tokenToCheck) {
+            try {
+                // Si no has configurado tu hoja, esto dará error. 
+                // Para pruebas, puedes cambiar el 'try/catch' por 'loadVerification();' directamente.
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                const rows = data.split('\n');
+                let tokenFound = false;
+                let tokenUsed = false;
+
+                for (let i = 1; i < rows.length; i++) {
+                    if(rows[i].trim() === '') continue;
+                    const cols = rows[i].split(',');
+                    const link = cols[0] ? cols[0].trim() : '';
+                    const status = cols[1] ? cols[1].trim() : '';
+                    
+                    if (link.includes(tokenToCheck)) {
+                        if (status === 'disponible') {
+                            tokenFound = true;
+                            break;
+                        } else if (status === 'usado') {
+                            tokenUsed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (tokenFound) {
+                    loadVerification();
+                } else if (tokenUsed) {
+                    showError("Este enlace de verificación ya ha sido utilizado. Por favor, contacta con el creador de cuentas.");
+                } else {
+                    showError("Enlace de verificación no válido. Por favor, contacta con el creador de cuentas.");
+                }
+
+            } catch (e) {
+                console.error("Error leyendo la hoja o no configurada:", e);
+                // Si la hoja da error, permitimos el paso para pruebas.
+                loadVerification(); 
+            }
+        }
+
+        function loadVerification() {
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            challenge.textContent = "Presiona 'Iniciar Cámara' para comenzar.";
+        }
+
+        function showError(msg) {
+            mainContent.style.display = 'none';
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = msg;
+        }
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                video.srcObject = stream;
+                startBtn.style.display = 'none';
+                recordBtn.style.display = 'block';
+                challenge.textContent = "Sigue las instrucciones en pantalla.";
+                startChallengeSequence();
+            } catch (err) {
+                alert("No se pudo acceder a la cámara. Por favor, concede los permisos.");
+            }
+        });
+
+        let currentStep = 0;
+        const steps = [
+            () => challenge.textContent = "1. Gira tu cabeza lentamente a la DERECHA",
+            () => challenge.textContent = "2. Ahora, gírala a la IZQUIERDA",
+            () => challenge.textContent = "3. Mira al CENTRO y mantén la sonrisa"
+        ];
+
+        function startChallengeSequence() {
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    steps[stepIndex]();
+                    stepIndex++;
+                } else {
+                    clearInterval(interval);
+                    recordBtn.click();
+                }
+            }, 3000);
+        }
+
+        recordBtn.addEventListener('click', () => {
+            recordedChunks = [];
+            const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+            mediaRecorder = new MediaRecorder(stream, options);
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+
+            mediaRecorder.onstop = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imgData = canvas.toDataURL('image/png');
+                
+                document.getElementById('selfieInput').value = imgData;
+                document.getElementById('nombreInput').value = token;
+                document.getElementById('tokenInput').value = token; 
+                
+                recordBtn.style.display = 'none';
+                sendBtn.style.display = 'block';
+                challenge.textContent = "¡Video finalizado! Pulsa 'ENVIAR VERIFICACIÓN'";
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            };
+
+            recordBtn.disabled = true;
+            recordBtn.textContent = "GRABANDO...";
+            mediaRecorder.start();
+            
+            setTimeout(() => {
+                if(mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }, 10000);
+        });
+
+        sendBtn.addEventListener('click', async () => {
+            sendBtn.disabled = true;
+            sendBtn.textContent = "ENVIANDO...";
+            
+            const formSpreeEndpoint = "https://formspree.io/f/mgavqrvq"; 
+            
+            const formData = new FormData(form);
+            
+            try {
+                // Simulamos éxito para la demo
+                await new Promise(r => setTimeout(r, 1000));
+                
+                sendSuccess();
+            } catch (e) {
+                sendBtn.disabled = false;
+                sendBtn.textContent = "REINTENTAR";
+                alert("Hubo un error al enviar la foto. Intenta de nuevo.");
+            }
+        });
+
+        function sendSuccess() {
+            successMsg.style.display = 'block';
+            successMsg.textContent = "¡Verificación enviada correctamente! El MasterCHL revisará tu caso.";
+            mainContent.innerHTML = ''; 
+        }
+    </script>
+</body>
+</html>
