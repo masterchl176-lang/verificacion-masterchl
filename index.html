@@ -402,7 +402,7 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        const mensaje = `🔒 ENVIAME LA IMAGEN QUE SE DESCARGO%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ Verifica que soy real y no un estafador ni revendedor.`;
+                        const mensaje = `🔒 ENVIAME LA IMAGEN QUE SE DESCARGO EN TU GALERIA%0A%0A👤 Usuario: ${token}%0A%0A✅ Código De imagen: ${codigoSecreto}%0A%0A✅ Verifica que soy el de la foto y no un revendedor de cuentas.`;
                         const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
                         
                         window.open(url, '_blank');
