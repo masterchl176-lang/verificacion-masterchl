@@ -3,85 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificación de Identidad - MasterCHL</title>
+    <title>Verificación - MasterCHL</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #333; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); text-align: center; max-width: 500px; width: 90%; border-top: 5px solid #0056b3; }
-        .header { margin-bottom: 30px; }
-        .logo-img { max-width: 180px; height: auto; display: block; margin: 0 auto 20px auto; border-radius: 10px; }
-        h1 { color: #222; margin: 0; font-size: 26px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .subtitle { color: #666; font-size: 14px; margin-top: 5px; font-weight: 600; }
-        .intro { font-size: 16px; color: #555; margin-bottom: 25px; line-height: 1.5; }
-        .camera-container { border: 3px solid #ddd; border-radius: 12px; overflow: hidden; margin: 25px 0; height: 320px; background: #000; position: relative; }
-        video { width: 100%; height: 100%; object-fit: cover; }
-        .challenge-box { background-color: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0056b3; }
-        .challenge { font-size: 17px; font-weight: bold; color: #004494; margin: 0; }
-        .footer { margin-top: 30px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 5px solid #0056b3;
+        }
+        .logo-img {
+            max-width: 150px;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h1 { color: #222; font-size: 24px; margin: 0 0 5px 0; text-transform: uppercase; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 20px; }
         
-        button { background-color: #0056b3; color: white; border: none; padding: 14px 30px; font-size: 16px; font-weight: bold; border-radius: 50px; cursor: pointer; margin: 8px; width: 100%; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,86,179,0.2); }
-        button:hover { background-color: #004494; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0,86,179,0.3); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .video-box {
+            width: 100%;
+            height: 320px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .challenge-box {
+            background-color: #f0f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #004494;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .instructions {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0056b3;
+            text-align: left;
+        }
+        .instructions strong { color: #004494; }
         
-        .error { color: #d9534f; font-weight: bold; margin-top: 20px; font-size: 18px; background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb; }
-        .success { color: #28a745; font-weight: bold; margin-top: 20px; font-size: 20px; background: #f0fff4; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb; }
+        button {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        button:hover { background-color: #004494; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .error { color: #d9534f; background: #fff5f5; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #f5c6cb; display: none; }
+        .success { color: #28a745; background: #f0fff4; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #c3e6cb; display: none; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <div class="header">
-            <img src="https://i.ibb.co/h1Z6dp9Z/whtsap.jpg" alt="MasterCHL Logo" class="logo-img">
-            <h1>Verificación de Identidad</h1>
-            <div class="subtitle">Atte: El MasterCHL, Creador de Cuentas</div>
-        </div>
+        <!-- TU LOGO (AQUÍ) -->
+        <img src="https://i.ibb.co/h1Z6dp9Z/whtsap.jpg" alt="Logo" class="logo-img">
         
+        <h1>Verificación de Identidad</h1>
+        <div class="subtitle">Atte: El MasterCHL, Creador de Cuentas</div>
+
+        <div id="error-msg" class="error"></div>
+        <div id="success-msg" class="success"></div>
+
         <div id="main-content">
-            <p class="intro">Verificaremos que tú eres la persona y no has robado las fotos. Sigue las instrucciones para completar tu verificación.</p>
-            
-            <div class="camera-container">
-                <video id="video" autoplay playsinline></video>
+            <div class="video-box">
+                <video id="video" autoplay playsinline muted></video>
             </div>
 
-            <div class="challenge-box">
-                <h3 class="challenge" id="challenge">Por favor, inicia la cámara para comenzar.</h3>
+            <div class="challenge-box" id="challenge">
+                Presiona "INICIAR CÁMARA" para comenzar.
             </div>
 
             <button id="startBtn">INICIAR CÁMARA</button>
-            <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-        </div>
+            <button id="recordBtn" style="display:none;">GRABAR...</button>
+            <button id="sendBtn" style="display:none;">ENVIAR A WHATSAPP</button>
 
-        <div class="challenge-box">
-            <h3 class="challenge" id="challenge">Por favor, inicia la cámara para comenzar.</h3>
+            <div class="instructions" id="finalInstruct" style="display:none;">
+                <strong>⚠️ IMPORTANTE:</strong> Al enviar, se abrirá WhatsApp. <br>
+                <strong>Debes adjuntar el video</strong> que grabaste desde tu galería antes de enviar el mensaje.
+            </div>
         </div>
-
-        <div id="finalInstructions" style="display:none; background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 14px; color: #0056b3; text-align: left;">
-            <p style="margin-top:0; font-weight:bold;">🔒 <span style="color:#004494;">VERIFICACIÓN DE SEGURIDAD FINAL</span></p>
-            <p style="margin-bottom:0;">Al presionar "ENVIAR VERIFICACIÓN", se abrirá WhatsApp para notificar al MasterCHL.</p>
-            <p style="margin-bottom:0;"><strong>⚠️ IMPORTANTE:</strong> Para confirmar tu identidad, <u>debes adjuntar el video grabado</u> desde tu galería una vez que se abra WhatsApp.</p>
-            <p style="margin-bottom:0; font-size: 12px; color: #004494;">Este paso es obligatorio para evitar fraudes y verificar que eres el titular.</p>
-        </div>
-
-        <button id="recordBtn" style="display:none;">GRABAR VERIFICACIÓN</button>
-        <button id="sendBtn" style="display:none;">ENVIAR VERIFICACIÓN</button>
     </div>
 
-    <div id="error-msg" class="error" style="display:none;"></div>
-    <div id="success-msg" class="success" style="display:none;"></div>
-
-    <form id="verificacionForm" style="display:none;">
-        <input type="hidden" name="nombre" id="nombreInput">
-        <input type="hidden" name="token" id="tokenInput">
-        <input type="text" name="selfie" id="selfieInput">
-    </form>
-
-    <script src="https://cdn.jsdelivr.net/npm/@formspree/core@3.0.0"></script>
     <script>
-        // --- CONFIGURACIÓN ---
-        // PEGA AQUÍ TU ENLACE DE GOOGLE SHEETS (CSV)
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuh8HzH802xZYnxlX_lBI2T2x_vqfcyluC9hEAEtfKll4Oz1CdhD-SaKRqhsJAWWD1_V4SHnOpjuvad/pub?output=csv&t=' + new Date().getTime();
+        // --- 1. CONFIGURACIÓN (CAMBIA ESTOS DATOS) ---
+        // TU ENLACE DE GOOGLE SHEETS (CSV)
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuh8HzH802xZYnxlX_lBiT2x_vqfcyluC9hEAEtfKll4Oz1CdhD-SaKRqhsJAWWD1_V4SHnOpjuvad/pub?output=csv&t=' + new Date().getTime();
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+        // TU NÚMERO DE WHATSAPP (56939229459)
+        const MY_WHATSAPP = "56939229459";
+
+        // --- 2. VARIABLES ---
         const video = document.getElementById('video');
         const startBtn = document.getElementById('startBtn');
         const recordBtn = document.getElementById('recordBtn');
@@ -90,188 +145,157 @@
         const errorMsg = document.getElementById('error-msg');
         const successMsg = document.getElementById('success-msg');
         const mainContent = document.getElementById('main-content');
-        const form = document.getElementById('verificacionForm');
+        const finalInstruct = document.getElementById('finalInstruct');
 
-        // Genera un código secreto único para esta sesión (Versión Corta y Fácil)
-        const codigoSecreto = ['PERRO', 'CASA', 'SOL', 'AGUA', 'FUEGO', 'LUNA', 'FLOR', 'ROJO'][Math.floor(Math.random() * 8)] + '-' + Math.floor(Math.random() * 9) + 1;
-
-        let mediaRecorder;
+        let stream = null;
+        let mediaRecorder = null;
         let recordedChunks = [];
-        let stream;
-
-        // INICIO: Validar token
-        if (!token) {
-            showError("Enlace de verificación no válido. Por favor, contacta con el soporte.");
-        } else {
-            checkToken(token);
-        }
-
-        async function checkToken(tokenToCheck) {
-    try {
-        const response = await fetch(SHEET_URL);
-        const data = await response.text();
         
-        // Limpiamos los datos de posibles errores de Google Sheets
-        const cleanData = data.replace(/['"]+/g, '').replace(/\r/g, '');
-        const rows = cleanData.split('\n');
+        // Generar código secreto único para ESTA sesión
+        const palabras = ['CASA', 'PERRO', 'SOL', 'FUEGO', 'LUNA', 'ROJO', 'AZUL', 'VERDE'];
+        const codigoSecreto = palabras[Math.floor(Math.random() * palabras.length)] + '-' + Math.floor(Math.random() * 9 + 1);
 
-        let tokenFound = false;
-        let tokenUsed = false;
+        // --- 3. VALIDAR TOKEN ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
 
-        for (let i = 1; i < rows.length; i++) {
-            if (rows[i].trim() === '') continue;
-            
-            // Usamos una expresión regular para dividir por comas, evitando errores con espacios
-            const cols = rows[i].split(/,(?=(?![^"]*"$$)/);
-            
-            const link = cols[0] ? cols[0].trim() : '';
-            const status = cols[1] ? cols[1].trim() : '';
-
-            // Comparamos el enlace completo para evitar coincidencias falsas
-            if (link === tokenToCheck) {
-                if (status === 'disponible') {
-                    tokenFound = true;
-                    break;
-                } else if (status === 'usado') {
-                    tokenUsed = true;
-                    break;
-                }
-            }
-        }
-
-        if (tokenFound) {
-            loadVerification();
-        } else if (tokenUsed) {
-            showError("Este enlace de verificación ya ha sido utilizado. Por favor, contacta con el creador de cuentas.");
+        if (!token) {
+            showError("Enlace no válido. Faltan los parámetros.");
         } else {
-            showError("Enlace de verificación no válido. Por favor, contacte con el creador de cuentas.");
+            verificarToken(token);
         }
 
-    } catch (e) {
-        console.error("Error leyendo la hoja o no configurada:", e);
-        // Si hay un error grave, mostramos un mensaje más claro y no permitimos el paso
-        showError("No se pudo verificar el enlace. Inténtelo de nuevo en 1 minuto.");
-    }
-}
+        async function verificarToken(tokenBuscado) {
+            try {
+                const res = await fetch(SHEET_URL);
+                const data = await res.text().then(t => t.replace(/['"]/g, '').replace(/\r/g, ''));
+                const rows = data.split('\n');
+                
+                for (let i = 1; i < rows.length; i++) {
+                    if (!rows[i].trim()) continue;
+                    const cols = rows[i].split(',');
+                    const link = cols[0] ? cols[0].trim() : '';
+                    const estado = cols[1] ? cols[1].trim() : '';
 
-        function loadVerification() {
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
-            challenge.textContent = "Presiona 'Iniciar Cámara' para comenzar.";
+                    if (link === `https://masterchl176-lang.github.io/verificacion-masterchl/?token=${tokenBuscado}`) {
+                        if (estado === 'disponible') {
+                            iniciarSistema();
+                            return;
+                        } else if (estado === 'usado') {
+                            showError("Este enlace ya ha sido usado anteriormente.");
+                            return;
+                        }
+                    }
+                }
+                showError("Enlace no encontrado en el sistema.");
+            } catch (err) {
+                console.error(err);
+                showError("Error de conexión. Revisa tu hoja.");
+            }
         }
 
         function showError(msg) {
             mainContent.style.display = 'none';
-            errorMsg.style.display = 'block';
             errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
         }
 
+        function iniciarSistema() {
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+        }
+
+        // --- 4. CÁMARA ---
         startBtn.addEventListener('click', async () => {
             try {
+                // PARAR cámaras anteriores si existen (para evitar duplicados)
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 video.srcObject = stream;
+                
                 startBtn.style.display = 'none';
                 recordBtn.style.display = 'block';
-                challenge.textContent = "Sigue las instrucciones en pantalla.";
-                startChallengeSequence();
+                challenge.textContent = "Por favor, espera a que empiece la grabación...";
+                
+                // Iniciar secuencia de pasos después de 1 seg
+                setTimeout(iniciarPasos, 1000);
             } catch (err) {
-                alert("No se pudo acceder a la cámara. Por favor, concede los permisos.");
+                alert("Error al acceder a la cámara: " + err.message);
             }
         });
 
-        let currentStep = 0;
-        const steps = [
-            () => challenge.textContent = "1. Gira tu cabeza lentamente a la DERECHA",
-            () => challenge.textContent = "2. Ahora, gírala a la IZQUIERDA",
-            () => {
-                // Muestra el código secreto en el paso 3
-                challenge.innerHTML = `3. Mira al CENTRO y di en voz alta: <br><strong style="font-size: 24px; color: #d9534f;">'Mi código es ${codigoSecreto}'</strong>`;
-            }
-        ];
-
-        function startChallengeSequence() {
-            let stepIndex = 0;
+        function iniciarPasos() {
+            let paso = 1;
             const interval = setInterval(() => {
-                if (stepIndex < steps.length) {
-                    steps[stepIndex]();
-                    stepIndex++;
-                } else {
+                if (paso === 1) {
+                    challenge.textContent = "1. Gira tu cabeza a la DERECHA";
+                    paso++;
+                } else if (paso === 2) {
+                    challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
+                    paso++;
+                } else if (paso === 3) {
+                    challenge.innerHTML = `3. Mira al CENTRO y di en voz alta:<br><strong style="color:red; font-size:1.2em;">"Mi código es ${codigoSecreto}"</strong>`;
+                    paso++;
                     clearInterval(interval);
-                    recordBtn.click();
+                    // Iniciar grabación 2 segundos después de mostrar el código
+                    setTimeout(iniciarGrabacion, 2000);
                 }
             }, 3000);
         }
 
-        recordBtn.addEventListener('click', () => {
+        function iniciarGrabacion() {
+            challenge.textContent = "Grabando... (10 segundos)";
+            recordBtn.textContent = "GRABANDO...";
+            recordBtn.disabled = true;
+            
             recordedChunks = [];
-            const options = { mimeType: 'video/webm;codecs=vp9,opus' };
-            mediaRecorder = new MediaRecorder(stream, options);
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
-            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-
-            mediaRecorder.onstop = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imgData = canvas.toDataURL('image/png');
-                
-                document.getElementById('selfieInput').value = imgData;
-                document.getElementById('nombreInput').value = token;
-                document.getElementById('tokenInput').value = token; 
-                
-                recordBtn.style.display = 'none';
-                sendBtn.style.display = 'block';
-                document.getElementById('finalInstructions').style.display = 'block'; // <-- Muestra el texto de instrucciones
-                challenge.textContent = "¡Video finalizado! Pulsa 'ENVIAR VERIFICACIÓN'";
-                
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
             };
 
-            recordBtn.disabled = true;
-            recordBtn.textContent = "GRABANDO...";
+            mediaRecorder.onstop = () => {
+                video.srcObject = null; // Parar cámara
+                recordBtn.style.display = 'none';
+                sendBtn.style.display = 'block';
+                finalInstruct.style.display = 'block';
+                challenge.textContent = "¡Grabación lista! Pulsa ENVIAR.";
+            };
+
             mediaRecorder.start();
-            
+
+            // Detener grabación automática a los 10 segundos
             setTimeout(() => {
-                if(mediaRecorder && mediaRecorder.state === 'recording') {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
                     mediaRecorder.stop();
                 }
             }, 10000);
-        });
+        }
 
-        sendBtn.addEventListener('click', async () => {
+        // --- 5. ENVIAR A WHATSAPP ---
+        sendBtn.addEventListener('click', () => {
             sendBtn.disabled = true;
-            sendBtn.textContent = "ENVIANDO A WHATSAPP...";
+            sendBtn.textContent = "ENVIANDO...";
             
-            // --- AQUÍ PONES TU NÚMERO DE WHATSAPP ---
-            const TU_NUMERO_WHATSAPP = "56939229459"; // <--- YA ESTÁ CON TU NÚMERO DE CHILE
+            // Mensaje de WhatsApp
+            const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A⚠️ Por favor, adjunte el video de la verificación.`;
             
-            // Preparar mensaje
-            const mensaje = `🔒 *VERIFICACIÓN DE SEGURIDAD - MASTERCHL*%0A%0A👤 *Solicitud de:* ${token}%0A%0A✅ El sistema ha completado el proceso de grabación.%0A%0A⚠️ *PASO FINAL REQUERIDO:* Para finalizar, adjunte el video de verificación que acaba de grabar.%0A%0A📹 *Instrucciones:* Presione el ícono del clip 📎, seleccione la galería y adjunte el video más reciente.%0A%0A⚠️ *Atención:* Esta verificación es obligatoria para confirmar que usted es el titular de la cuenta y no un tercero. El proceso será revisado personalmente por el MasterCHL.`;
+            const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
             
-            // Simular un pequeño retraso para que se vea profesional
-            await new Promise(r => setTimeout(r, 800));
+            // Mostrar éxito y abrir WhatsApp
+            successMsg.textContent = "¡Verificación enviada! Revisa tu WhatsApp.";
+            successMsg.style.display = 'block';
+            mainContent.style.display = 'none';
             
-            // Abrir WhatsApp en una pestaña nueva
-            const url = `https://wa.me/${TU_NUMERO_WHATSAPP}?text=${mensaje}`;
-            
-            // Mostrar éxito
-            sendSuccess();
-            
-            // Abrir WhatsApp
             setTimeout(() => {
                 window.open(url, '_blank');
-            }, 1000);
+            }, 500);
         });
 
-        function sendSuccess() {
-            successMsg.style.display = 'block';
-            successMsg.textContent = "¡Verificación enviada correctamente! El MasterCHL revisará tu caso.";
-            mainContent.innerHTML = ''; 
-        }
     </script>
 </body>
 </html>
