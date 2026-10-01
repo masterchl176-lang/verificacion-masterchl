@@ -107,44 +107,52 @@
         }
 
         async function checkToken(tokenToCheck) {
-            try {
-                const response = await fetch(SHEET_URL);
-                const data = await response.text();
-                const rows = data.split('\n');
-                let tokenFound = false;
-                let tokenUsed = false;
+    try {
+        const response = await fetch(SHEET_URL);
+        const data = await response.text();
+        
+        // Limpiamos los datos de posibles errores de Google Sheets
+        const cleanData = data.replace(/['"]+/g, '').replace(/\r/g, '');
+        const rows = cleanData.split('\n');
 
-                for (let i = 1; i < rows.length; i++) {
-                    if(rows[i].trim() === '') continue;
-                    const cols = rows[i].split(',');
-                    const link = cols[0] ? cols[0].trim() : '';
-                    const status = cols[1] ? cols[1].trim() : '';
-                    
-                    if (link.includes(tokenToCheck)) {
-                        if (status === 'disponible') {
-                            tokenFound = true;
-                            break;
-                        } else if (status === 'usado') {
-                            tokenUsed = true;
-                            break;
-                        }
-                    }
+        let tokenFound = false;
+        let tokenUsed = false;
+
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i].trim() === '') continue;
+            
+            // Usamos una expresión regular para dividir por comas, evitando errores con espacios
+            const cols = rows[i].split(/,(?=(?![^"]*"$$)/);
+            
+            const link = cols[0] ? cols[0].trim() : '';
+            const status = cols[1] ? cols[1].trim() : '';
+
+            // Comparamos el enlace completo para evitar coincidencias falsas
+            if (link === tokenToCheck) {
+                if (status === 'disponible') {
+                    tokenFound = true;
+                    break;
+                } else if (status === 'usado') {
+                    tokenUsed = true;
+                    break;
                 }
-
-                if (tokenFound) {
-                    loadVerification();
-                } else if (tokenUsed) {
-                    showError("Este enlace de verificación ya ha sido utilizado. Por favor, contacta con el creador de cuentas.");
-                } else {
-                    showError("Enlace de verificación no válido. Por favor, contacte con el creador de cuentas.");
-                }
-
-            } catch (e) {
-                console.error("Error leyendo la hoja o no configurada:", e);
-                // Si la hoja da error, permitimos el paso para pruebas.
-                loadVerification(); 
             }
         }
+
+        if (tokenFound) {
+            loadVerification();
+        } else if (tokenUsed) {
+            showError("Este enlace de verificación ya ha sido utilizado. Por favor, contacta con el creador de cuentas.");
+        } else {
+            showError("Enlace de verificación no válido. Por favor, contacte con el creador de cuentas.");
+        }
+
+    } catch (e) {
+        console.error("Error leyendo la hoja o no configurada:", e);
+        // Si hay un error grave, mostramos un mensaje más claro y no permitimos el paso
+        showError("No se pudo verificar el enlace. Inténtelo de nuevo en 1 minuto.");
+    }
+}
 
         function loadVerification() {
             errorMsg.style.display = 'none';
